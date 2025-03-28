@@ -1,0 +1,54 @@
+.App {
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.token-image {
+  width: 300px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.numero {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 20px 0;
+}
+
+.token {
+  font-size: 1.5rem;
+  margin: 20px 0;
+  word-wrap: break-word;
+  max-width: 80%;
+}
+
+.error {
+  color: #ff6b6b;
+  font-size: 1.2rem;
+  margin: 20px 0;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #61dafb;
+  border: none;
+  border-radius: 5px;
+  color: #282c34;
+  margin-top: 20px;
+}
+
+button:hover {
+  background-color: #21a1f1;
+}
