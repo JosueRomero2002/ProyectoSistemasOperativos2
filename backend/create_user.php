@@ -1,4 +1,6 @@
 <?php
+require __DIR__ . '/db_connection.php';
+
 header('Content-Type: application/json');
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
@@ -9,60 +11,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$data = json_decode(file_get_contents('php://input'), true);
+try {
+    $data = json_decode(file_get_contents('php://input'), true);
 
-// Validar datos
-if (empty($data['username']) || empty($data['password']) || empty($data['email'])) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Datos incompletos']);
-    exit;
-}
-
-// Generar token
-$tokenData = json_decode(file_get_contents('http://localhost:8002/generar_token.php'), true);
-if (isset($tokenData['error'])) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Error generando token: ' . $tokenData['error']]);
-    exit;
-}
-
-$codigo = $tokenData['numero'];
-$token = $tokenData['token'];
-
-// Encriptar contraseña con el código
-function encriptarContrasena($password, $codigo) {
-    $encriptada = '';
-    for ($i = 0; $i < strlen($password); $i++) {
-        $ascii = ord($password[$i]);
-        $encriptado = Modular($ascii, 11413, $codigo);
-        $encriptada .= chr($encriptado);
+    // Validaciones
+    if (empty($data['username']) || empty($data['password']) || empty($data['email'])) {
+        throw new Exception('Todos los campos son requeridos');
     }
-    return base64_encode($encriptada);
+
+    // Generar token
+    require __DIR__ . '/generar_token.php';
+
+
+    // Hashear contraseña
+    $password_hash = password_hash($data['password'], PASSWORD_DEFAULT);
+
+    // Insertar usuario con token
+  // Modificar la inserción
+// Después de generar el token
+$token_data = generarToken();
+
+// Insertar usuario con el token_id correcto
+$stmt = $conn->prepare("INSERT INTO usuarios 
+    (username, password, email, token_id) 
+    VALUES (?, ?, ?, ?)");
+$stmt->bind_param("sssi", 
+    $data['username'],
+    $password_hash,
+    $data['email'],
+    $token_data['token_id'] // Usar el ID del token
+);
+    if (!$stmt->execute()) {
+        throw new Exception('Error al crear usuario: ' . $stmt->error);
+    }
+
+    echo json_encode([
+        'success' => true,
+        'token' => $token_data['token']
+    ]);
+
+} catch (Exception $e) {
+    http_response_code(400);
+    echo json_encode(['error' => $e->getMessage()]);
 }
-
-$passwordEncriptada = encriptarContrasena($data['password'], $codigo);
-
-// Conexión a BD SquirrelMail
-$connSquirrel = new mysqli('localhost', 'root', 'josue', 'squirrelmail_db');
-$stmt = $connSquirrel->prepare("INSERT INTO usuarios (username, password, email, token) VALUES (?, ?, ?, ?)");
-$stmt->bind_param("ssss", $data['username'], $passwordEncriptada, $data['email'], $token);
-
-// Conexión a BD Moodle
-$connMoodle = new mysqli('localhost', 'root', 'josue', 'moodle_db');
-$time = time();
-$stmtMoodle = $connMoodle->prepare("INSERT INTO mdl_user (username, password, email, confirmed, timecreated) VALUES (?, ?, ?, 1, ?)");
-$stmtMoodle->bind_param("sssi", $data['username'], $passwordEncriptada, $data['email'], $time);
-
-// Ejecutar inserciones
-if (!$stmt->execute() || !$stmtMoodle->execute()) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Error creando usuario']);
-} else {
-    echo json_encode(['success' => true]);
-}
-
-$stmt->close();
-$stmtMoodle->close();
-$connSquirrel->close();
-$connMoodle->close();
 ?>

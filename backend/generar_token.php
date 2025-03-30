@@ -1,25 +1,16 @@
 <?php
+require __DIR__ . '/db_connection.php';
+
 header('Content-Type: application/json');
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-// Configuración de CORS
-if (php_sapi_name() !== 'cli') {
-    header("Access-Control-Allow-Origin: *");
-    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-    header("Access-Control-Allow-Headers: Content-Type, Authorization");
-
-    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        http_response_code(204);
-        exit;
-    }
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
 }
 
-// Configuración de la base de datos
-$db_host = 'localhost';
-$db_user = 'tu_usuario_db';
-$db_pass = 'tu_contraseña_db';
-$db_name = 'sistema_usuarios';
-
-// Funciones de encriptación
 function de2bi($x) {
     $b = [];
     while ($x > 0) {
@@ -44,28 +35,26 @@ function Modular($b, $N, $n) {
     return $a % $N;
 }
 
-// Generación del token
-try {
+function generarToken() {
+    global $conn;
+    
     $Original = [];
     $Ordenado = [];
 
-    // Caracteres permitidos
-    $Original[] = Modular(32, 11413, 3533);  // Espacio
-    $Original[] = Modular(44, 11413, 3533);  // Coma
-    $Original[] = Modular(46, 11413, 3533);  // Punto
+    // Generar caracteres
+    $Original[] = Modular(32, 11413, 3533); // Espacio
+    $Original[] = Modular(44, 11413, 3533); // Coma
+    $Original[] = Modular(46, 11413, 3533); // Punto
 
-    // Números (48-57)
-    for ($i = 48; $i <= 57; $i++) {
+    for ($i = 48; $i <= 57; $i++) { // Números
         $Original[] = Modular($i, 11413, 3533);
     }
 
-    // Mayúsculas (65-90)
-    for ($i = 65; $i <= 90; $i++) {
+    for ($i = 65; $i <= 90; $i++) { // Mayúsculas
         $Original[] = Modular($i, 11413, 3533);
     }
 
-    // Minúsculas (97-122)
-    for ($i = 97; $i <= 122; $i++) {
+    for ($i = 97; $i <= 122; $i++) { // Minúsculas
         $Original[] = Modular($i, 11413, 3533);
     }
 
@@ -91,49 +80,35 @@ try {
         }
     }
 
-    // Conexión a MySQL
-    $db = new mysqli('localhost', 'usuario', 'contraseña', 'proyecto_clase');
+    // Insertar en BD
+  // Dentro de la función generarToken()
+$stmt = $conn->prepare("INSERT INTO tokens (codigo, token) VALUES (?, ?)");
+$stmt->bind_param("is", $Codigo, $Resultado);
 
+if (!$stmt->execute()) {
+    throw new Exception('Error al guardar token: ' . $stmt->error);
+}
 
-    
-    if ($conn->connect_error) {
-        throw new Exception('Error de conexión a la base de datos: ' . $conn->connect_error);
+$token_id = $conn->insert_id; // Obtener el ID del token insertado
+
+return [
+    'numero' => $Codigo,
+    'token' => $Resultado,
+    'token_id' => $token_id // Asegurar que se devuelve este valor
+];
+
+   // En la función generarToken():
+
+}
+
+// Ejecución directa
+if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
+    try {
+        $token_data = generarToken();
+        echo json_encode($token_data);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => $e->getMessage()]);
     }
-
-    // Insertar en base de datos
-    $stmt = $conn->prepare("INSERT INTO tokens (codigo, token) VALUES (?, ?)");
-    $stmt->bind_param("ss", $Codigo, $Resultado);
-
-    // Almacenar en tu sistema
-$db->query("INSERT INTO usuarios (username, password, token) VALUES ('$username', '$password', '$Resultado')");
-
-// Almacenar en Moodle
-$db->query("INSERT INTO mdl_user (username, password, email) VALUES ('$username', '$password', '$email')");
-
-// Almacenar en SquirrelMail 
-$db->query("INSERT INTO squirrelmail_users (username, password) VALUES ('$username', '$password')");
-    
-    if (!$stmt->execute()) {
-        throw new Exception('Error al guardar el token: ' . $stmt->error);
-    }
-
-    $stmt->close();
-    $conn->close();
-
-    // Respuesta exitosa
-    echo json_encode([
-        'success' => true,
-        'numero' => $Codigo,
-        'token' => $Resultado,
-        'mensaje' => 'Token generado y almacenado correctamente'
-    ]);
-
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'error' => $e->getMessage(),
-        'detalle' => 'Error en el servidor al generar el token'
-    ]);
 }
 ?>

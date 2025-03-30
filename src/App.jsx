@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 
+
 function App() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -9,6 +10,10 @@ function App() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isRegistering, setIsRegistering] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    //const [isRegistering, setIsRegistering] = useState(false);
+   // const [email, setEmail] = useState('');
+    
+   
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -36,37 +41,33 @@ function App() {
         }
     };
 
+    // Nuevo método para registro
     const handleRegister = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         setError('');
-
+        
         try {
             const response = await fetch('http://localhost:8002/create_user.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password, email }),
             });
-
+            
             const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Error en el registro');
-            }
-
-            setSuccessMessage('Usuario registrado exitosamente!');
-            setIsRegistering(false);
-            setUsername('');
-            setPassword('');
-            setEmail('');
-
+            
+            if (!response.ok) throw new Error(data.error || 'Error en registro');
+            
+            // Auto-login después de registro
+            handleSubmit(e);
+            
         } catch (err) {
-            setError(err.message || 'Error al registrar usuario');
+            setError(err.message);
         } finally {
             setIsSubmitting(false);
         }
     };
-
+    
     return (
         <div className="App">
             <header className="App-header">
