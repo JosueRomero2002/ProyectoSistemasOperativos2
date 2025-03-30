@@ -1,4 +1,6 @@
 <?php
+require __DIR__ . '/db_connection.php';
+
 header('Content-Type: application/json');
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
@@ -12,50 +14,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 try {
     $data = json_decode(file_get_contents('php://input'), true);
     
-    // Validación de datos
     if (empty($data['username']) || empty($data['password'])) {
         throw new Exception('Usuario y contraseña requeridos');
     }
 
-    $username = filter_var($data['username'], FILTER_SANITIZE_STRING);
-    $password = filter_var($data['password'], FILTER_SANITIZE_STRING);
-
-    // Consulta a Supabase
-    $supabase_url = 'https://wjnjyfzttifbegqzouoa.supabase.co/rest/v1/users?select=*&username=eq.' . urlencode($username);
-    $supabase_key = 'TU_API_KEY';
-
-    $ch = curl_init($supabase_url);
-    curl_setopt_array($ch, [
-        CURLOPT_HTTPHEADER => [
-            'apikey: ' . $supabase_key,
-            'Authorization: Bearer ' . $supabase_key
-        ],
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FAILONERROR => true
-    ]);
-
-    $response = curl_exec($ch);
+    // Obtener usuario
+    $stmt = $conn->prepare("
+        SELECT u.*, t.token 
+        FROM usuarios u
+        JOIN tokens t ON u.token_id = t.id
+        WHERE u.username = ?
+    ");
+    $stmt->bind_param("s", $data['username']);
+    $stmt->execute();
+    $result = $stmt->get_result();
     
-    if (curl_errno($ch)) {
-        throw new Exception('Error de conexión: ' . curl_error($ch));
-    }
-
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    $users = json_decode($response, true);
-
-    if (empty($users)) {
+    if ($result->num_rows === 0) {
         throw new Exception('Credenciales inválidas');
     }
 
-    if (!password_verify($password, $users[0]['password_hash'])) {
+    $user = $result->fetch_assoc();
+
+    // Verificar contraseña
+    if (!password_verify($data['password'], $user['password'])) {
         throw new Exception('Credenciales inválidas');
     }
 
-    echo json_encode(['success' => true]);
+    // Respuesta exitosa
+    echo json_encode([
+        'success' => true,
+        'username' => $user['username'],
+        'email' => $user['email'],
+        'squirrelmail_url' => "http://localhost/squirrelmail?token={$user['token']}",
+        'moodle_url' => "http://localhost/moodle?token={$user['token']}"
+    ]);
 
 } catch (Exception $e) {
     http_response_code(401);
     echo json_encode(['error' => $e->getMessage()]);
 }
+?>

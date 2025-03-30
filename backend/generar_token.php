@@ -1,22 +1,15 @@
 <?php
+require __DIR__ . '/db_connection.php';
+
 header('Content-Type: application/json');
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-
-if (php_sapi_name() !== 'cli') {
-    header("Access-Control-Allow-Origin: *");
-    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-    header("Access-Control-Allow-Headers: Content-Type, Authorization");
-
-    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        http_response_code(204);
-        exit;
-    }
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
 }
-
-#if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
- #   http_response_code(204);
-  #  exit;
-#}
 
 function de2bi($x) {
     $b = [];
@@ -42,81 +35,80 @@ function Modular($b, $N, $n) {
     return $a % $N;
 }
 
-$Original = [];
-$Ordenado = [];
-
-// Espacio, coma y punto
-$Original[] = Modular(32, 11413, 3533);
-$Original[] = Modular(44, 11413, 3533);
-$Original[] = Modular(46, 11413, 3533);
-
-for ($i = 48; $i <= 57; $i++) {
-    $Original[] = Modular($i, 11413, 3533);
-}
-
-for ($i = 65; $i <= 90; $i++) {
-    $Original[] = Modular($i, 11413, 3533);
-}
-
-for ($i = 97; $i <= 122; $i++) {
-    $Original[] = Modular($i, 11413, 3533);
-}
-
-
-$Ordenado = $Original;
-sort($Ordenado);
-
-$Codigo = rand(100000, 999999);
-$Texto = strval($Codigo);
-$Resultado = "";
-
-
-for ($i = 0; $i < strlen($Texto); $i++) {
-    $Letra = $Texto[$i];
-    $Numero = ord($Letra);
-    $Numero = Modular($Numero, 11413, 3533);
+function generarToken() {
+    global $conn;
     
-    $indice = array_search($Numero, $Original);
-    if ($indice !== false) {
-        $Numero = $Ordenado[$indice];
-        $Numero = Modular($Numero, 11413, 6597);
-        $Letra = chr($Numero);
-        $Resultado .= $Letra;
+    $Original = [];
+    $Ordenado = [];
+
+    // Generar caracteres
+    $Original[] = Modular(32, 11413, 3533); // Espacio
+    $Original[] = Modular(44, 11413, 3533); // Coma
+    $Original[] = Modular(46, 11413, 3533); // Punto
+
+    for ($i = 48; $i <= 57; $i++) { // Números
+        $Original[] = Modular($i, 11413, 3533);
     }
+
+    for ($i = 65; $i <= 90; $i++) { // Mayúsculas
+        $Original[] = Modular($i, 11413, 3533);
+    }
+
+    for ($i = 97; $i <= 122; $i++) { // Minúsculas
+        $Original[] = Modular($i, 11413, 3533);
+    }
+
+    $Ordenado = $Original;
+    sort($Ordenado);
+
+    // Generar código y token
+    $Codigo = rand(100000, 999999);
+    $Texto = strval($Codigo);
+    $Resultado = "";
+
+    for ($i = 0; $i < strlen($Texto); $i++) {
+        $Letra = $Texto[$i];
+        $Numero = ord($Letra);
+        $Numero = Modular($Numero, 11413, 3533);
+        
+        $indice = array_search($Numero, $Original);
+        if ($indice !== false) {
+            $Numero = $Ordenado[$indice];
+            $Numero = Modular($Numero, 11413, 6597);
+            $Letra = chr($Numero);
+            $Resultado .= $Letra;
+        }
+    }
+
+    // Insertar en BD
+  // Dentro de la función generarToken()
+$stmt = $conn->prepare("INSERT INTO tokens (codigo, token) VALUES (?, ?)");
+$stmt->bind_param("is", $Codigo, $Resultado);
+
+if (!$stmt->execute()) {
+    throw new Exception('Error al guardar token: ' . $stmt->error);
 }
 
-$supabase_url = 'https://wjnjyfzttifbegqzouoa.supabase.co';
-$supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indqbmp5Znp0dGlmYmVncXpvdW9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI0MjQyNzMsImV4cCI6MjA1ODAwMDI3M30.8DY-Y5huHdK_fZ7GjvfKvE9aBgeQ-xHZ2FQlVml_OQI';
+$token_id = $conn->insert_id; // Obtener el ID del token insertado
 
-$data = json_encode(['token' => $Resultado]);
+return [
+    'numero' => $Codigo,
+    'token' => $Resultado,
+    'token_id' => $token_id // Asegurar que se devuelve este valor
+];
 
-$ch = curl_init($supabase_url . '/rest/v1/token');
-curl_setopt_array($ch, [
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST => true,
-    CURLOPT_POSTFIELDS => $data,
-    CURLOPT_HTTPHEADER => [
-        'Content-Type: application/json',
-        'apikey: ' . $supabase_key,
-        'Authorization: Bearer ' . $supabase_key,
-        'Prefer: return=minimal'
-    ]
-]);
+   // En la función generarToken():
 
-$response = curl_exec($ch);
-$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
+}
 
-if ($http_code == 201 || $http_code == 200) {
-    echo json_encode([
-        'numero' => $Codigo,
-        'token' => $Resultado,
-        'mensaje' => 'Token guardado en Supabase correctamente'
-    ]);
-} else {
-    echo json_encode([
-        'error' => 'Error al insertar en Supabase',
-        'detalle' => $response
-    ]);
+// Ejecución directa
+if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
+    try {
+        $token_data = generarToken();
+        echo json_encode($token_data);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => $e->getMessage()]);
+    }
 }
 ?>
