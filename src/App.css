@@ -52,3 +52,66 @@ button {
 button:hover {
   background-color: #21a1f1;
 }
+
+
+.form-group {
+  margin: 15px 0;
+}
+
+.form-group input {
+  padding: 12px;
+  width: 250px;
+  border-radius: 4px;
+  border: 1px solid #61dafb;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.success-message {
+  color: #4CAF50;
+  margin: 15px 0;
+  padding: 10px;
+  border: 1px solid #4CAF50;
+  border-radius: 4px;
+}
+
+.auth-switch {
+  margin-top: 20px;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: #61dafb;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.system-links {
+  margin-top: 30px;
+  display: flex;
+  gap: 20px;
+}
+
+.system-links a {
+  color: #61dafb;
+  text-decoration: none;
+  padding: 10px 20px;
+  border: 1px solid #61dafb;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.system-links a:hover {
+  background-color: #61dafb;
+  color: #282c34;
+}
+
+.register-button {
+  background-color: #4CAF50 !important;
+}
+
+.register-button:hover {
+  background-color: #45a049 !important;
+}

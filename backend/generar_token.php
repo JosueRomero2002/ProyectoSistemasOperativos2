@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 
-
+// Configuración de CORS
 if (php_sapi_name() !== 'cli') {
     header("Access-Control-Allow-Origin: *");
     header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
@@ -13,11 +13,13 @@ if (php_sapi_name() !== 'cli') {
     }
 }
 
-#if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
- #   http_response_code(204);
-  #  exit;
-#}
+// Configuración de la base de datos
+$db_host = 'localhost';
+$db_user = 'tu_usuario_db';
+$db_pass = 'tu_contraseña_db';
+$db_name = 'sistema_usuarios';
 
+// Funciones de encriptación
 function de2bi($x) {
     $b = [];
     while ($x > 0) {
@@ -42,81 +44,85 @@ function Modular($b, $N, $n) {
     return $a % $N;
 }
 
-$Original = [];
-$Ordenado = [];
+// Generación del token
+try {
+    $Original = [];
+    $Ordenado = [];
 
-// Espacio, coma y punto
-$Original[] = Modular(32, 11413, 3533);
-$Original[] = Modular(44, 11413, 3533);
-$Original[] = Modular(46, 11413, 3533);
+    // Caracteres permitidos
+    $Original[] = Modular(32, 11413, 3533);  // Espacio
+    $Original[] = Modular(44, 11413, 3533);  // Coma
+    $Original[] = Modular(46, 11413, 3533);  // Punto
 
-for ($i = 48; $i <= 57; $i++) {
-    $Original[] = Modular($i, 11413, 3533);
-}
-
-for ($i = 65; $i <= 90; $i++) {
-    $Original[] = Modular($i, 11413, 3533);
-}
-
-for ($i = 97; $i <= 122; $i++) {
-    $Original[] = Modular($i, 11413, 3533);
-}
-
-
-$Ordenado = $Original;
-sort($Ordenado);
-
-$Codigo = rand(100000, 999999);
-$Texto = strval($Codigo);
-$Resultado = "";
-
-
-for ($i = 0; $i < strlen($Texto); $i++) {
-    $Letra = $Texto[$i];
-    $Numero = ord($Letra);
-    $Numero = Modular($Numero, 11413, 3533);
-    
-    $indice = array_search($Numero, $Original);
-    if ($indice !== false) {
-        $Numero = $Ordenado[$indice];
-        $Numero = Modular($Numero, 11413, 6597);
-        $Letra = chr($Numero);
-        $Resultado .= $Letra;
+    // Números (48-57)
+    for ($i = 48; $i <= 57; $i++) {
+        $Original[] = Modular($i, 11413, 3533);
     }
-}
 
-$supabase_url = 'https://wjnjyfzttifbegqzouoa.supabase.co';
-$supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indqbmp5Znp0dGlmYmVncXpvdW9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI0MjQyNzMsImV4cCI6MjA1ODAwMDI3M30.8DY-Y5huHdK_fZ7GjvfKvE9aBgeQ-xHZ2FQlVml_OQI';
+    // Mayúsculas (65-90)
+    for ($i = 65; $i <= 90; $i++) {
+        $Original[] = Modular($i, 11413, 3533);
+    }
 
-$data = json_encode(['token' => $Resultado]);
+    // Minúsculas (97-122)
+    for ($i = 97; $i <= 122; $i++) {
+        $Original[] = Modular($i, 11413, 3533);
+    }
 
-$ch = curl_init($supabase_url . '/rest/v1/token');
-curl_setopt_array($ch, [
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST => true,
-    CURLOPT_POSTFIELDS => $data,
-    CURLOPT_HTTPHEADER => [
-        'Content-Type: application/json',
-        'apikey: ' . $supabase_key,
-        'Authorization: Bearer ' . $supabase_key,
-        'Prefer: return=minimal'
-    ]
-]);
+    $Ordenado = $Original;
+    sort($Ordenado);
 
-$response = curl_exec($ch);
-$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
+    // Generar código y token
+    $Codigo = rand(100000, 999999);
+    $Texto = strval($Codigo);
+    $Resultado = "";
 
-if ($http_code == 201 || $http_code == 200) {
+    for ($i = 0; $i < strlen($Texto); $i++) {
+        $Letra = $Texto[$i];
+        $Numero = ord($Letra);
+        $Numero = Modular($Numero, 11413, 3533);
+        
+        $indice = array_search($Numero, $Original);
+        if ($indice !== false) {
+            $Numero = $Ordenado[$indice];
+            $Numero = Modular($Numero, 11413, 6597);
+            $Letra = chr($Numero);
+            $Resultado .= $Letra;
+        }
+    }
+
+    // Conexión a MySQL
+    $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
+    
+    if ($conn->connect_error) {
+        throw new Exception('Error de conexión a la base de datos: ' . $conn->connect_error);
+    }
+
+    // Insertar en base de datos
+    $stmt = $conn->prepare("INSERT INTO tokens (codigo, token) VALUES (?, ?)");
+    $stmt->bind_param("ss", $Codigo, $Resultado);
+    
+    if (!$stmt->execute()) {
+        throw new Exception('Error al guardar el token: ' . $stmt->error);
+    }
+
+    $stmt->close();
+    $conn->close();
+
+    // Respuesta exitosa
     echo json_encode([
+        'success' => true,
         'numero' => $Codigo,
         'token' => $Resultado,
-        'mensaje' => 'Token guardado en Supabase correctamente'
+        'mensaje' => 'Token generado y almacenado correctamente'
     ]);
-} else {
+
+} catch (Exception $e) {
+    http_response_code(500);
     echo json_encode([
-        'error' => 'Error al insertar en Supabase',
-        'detalle' => $response
+        'success' => false,
+        'error' => $e->getMessage(),
+        'detalle' => 'Error en el servidor al generar el token'
     ]);
 }
 ?>
