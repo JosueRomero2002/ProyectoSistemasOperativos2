@@ -92,7 +92,9 @@ try {
     }
 
     // Conexión a MySQL
-    $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
+    $db = new mysqli('localhost', 'usuario', 'contraseña', 'proyecto_clase');
+
+
     
     if ($conn->connect_error) {
         throw new Exception('Error de conexión a la base de datos: ' . $conn->connect_error);
@@ -101,6 +103,15 @@ try {
     // Insertar en base de datos
     $stmt = $conn->prepare("INSERT INTO tokens (codigo, token) VALUES (?, ?)");
     $stmt->bind_param("ss", $Codigo, $Resultado);
+
+    // Almacenar en tu sistema
+$db->query("INSERT INTO usuarios (username, password, token) VALUES ('$username', '$password', '$Resultado')");
+
+// Almacenar en Moodle
+$db->query("INSERT INTO mdl_user (username, password, email) VALUES ('$username', '$password', '$email')");
+
+// Almacenar en SquirrelMail 
+$db->query("INSERT INTO squirrelmail_users (username, password) VALUES ('$username', '$password')");
     
     if (!$stmt->execute()) {
         throw new Exception('Error al guardar el token: ' . $stmt->error);

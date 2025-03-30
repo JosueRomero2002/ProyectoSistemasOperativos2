@@ -19,7 +19,7 @@ if (empty($data['username']) || empty($data['password']) || empty($data['email']
 }
 
 // Generar token
-$tokenData = json_decode(file_get_contents('http://localhost:8002/backend/generar_token.php'), true);
+$tokenData = json_decode(file_get_contents('http://localhost:8002/generar_token.php'), true);
 if (isset($tokenData['error'])) {
     http_response_code(500);
     echo json_encode(['error' => 'Error generando token: ' . $tokenData['error']]);
@@ -43,12 +43,12 @@ function encriptarContrasena($password, $codigo) {
 $passwordEncriptada = encriptarContrasena($data['password'], $codigo);
 
 // Conexión a BD SquirrelMail
-$connSquirrel = new mysqli('localhost', 'usuario', 'contraseña', 'squirrelmail_db');
+$connSquirrel = new mysqli('localhost', 'root', 'josue', 'squirrelmail_db');
 $stmt = $connSquirrel->prepare("INSERT INTO usuarios (username, password, email, token) VALUES (?, ?, ?, ?)");
 $stmt->bind_param("ssss", $data['username'], $passwordEncriptada, $data['email'], $token);
 
 // Conexión a BD Moodle
-$connMoodle = new mysqli('localhost', 'usuario', 'contraseña', 'moodle_db');
+$connMoodle = new mysqli('localhost', 'root', 'josue', 'moodle_db');
 $time = time();
 $stmtMoodle = $connMoodle->prepare("INSERT INTO mdl_user (username, password, email, confirmed, timecreated) VALUES (?, ?, ?, 1, ?)");
 $stmtMoodle->bind_param("sssi", $data['username'], $passwordEncriptada, $data['email'], $time);

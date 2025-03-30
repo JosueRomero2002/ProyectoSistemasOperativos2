@@ -9,51 +9,28 @@ function App() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isRegistering, setIsRegistering] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         setError('');
-
+    
         try {
             const response = await fetch('http://localhost:8002/login.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
             });
-
+    
             const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Error de autenticación');
-            }
-
-            // Redirección automática a SquirrelMail
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = 'http://localhost/squirrelmail/src/redirect.php';
-            
-            const fields = {
-                login_username: username,
-                secretkey: password,
-                js_autodetect_results: '1',
-                just_logged_in: '1',
-                smsubmit: 'Login'
-            };
-
-            Object.entries(fields).forEach(([name, value]) => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = name;
-                input.value = value;
-                form.appendChild(input);
-            });
-
-            document.body.appendChild(form);
-            form.submit();
-
+    
+            if (!response.ok) throw new Error(data.error || 'Error de autenticación');
+    
+            // Redirección automática a ambos sistemas
+            window.open(data.squirrelmail, '_self');
+            window.open(data.moodle, '_blank');
+    
         } catch (err) {
-            setError(err.message || 'Error al conectar con el servidor');
+            setError(err.message);
         } finally {
             setIsSubmitting(false);
         }
@@ -65,7 +42,7 @@ function App() {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:8002/backend/create_user.php', {
+            const response = await fetch('http://localhost:8002/create_user.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password, email }),

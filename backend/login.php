@@ -100,6 +100,14 @@ error_log("Código usado: " . $codigo);
         throw new Exception('Credenciales inválidas');
     }
 
+    $token = $db->query("SELECT token FROM usuarios WHERE username = '$username'")->fetch_row()[0];
+
+echo json_encode([
+    'success' => true,
+    'squirrelmail' => "http://localhost/squirrelmail/src/redirect.php?token=$token",
+    'moodle' => "http://localhost/moodle/login/index.php?token=$token"
+]);
+
     // Crear sesión (opcional)
     session_start();
     $_SESSION['user'] = [
