@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 
-
-function App() {
+function App({ onLogin }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
@@ -10,105 +9,31 @@ function App() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isRegistering, setIsRegistering] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
-    //const [isRegistering, setIsRegistering] = useState(false);
-   // const [email, setEmail] = useState('');
-   const [redirecting, setRedirecting] = useState(false);
-    
-   
-   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError('');
 
-    try {
-        const response = await fetch('http://localhost:8002/login.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password }),
-        });
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setError('');
 
-        const data = await response.json();
+        try {
+            const response = await fetch('http://localhost:8002/login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
 
-        if (!response.ok) throw new Error(data.error || 'Error de autenticación');
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Error de autenticación');
 
-        console.log(data);
+            onLogin(data, password);
 
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = 'http://localhost/squirrelmail/src/redirect.php'; 
-        const fields = {
-            login_username: data.username,
-            secretkey: data.password,
-            js_autodetect_results: '1',  
-            just_logged_in: '1',          
-            smsubmit: 'Login'             
-        };
-
-        // Crear inputs hidden
-        Object.entries(fields).forEach(([name, value]) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = name;
-            input.value = value;
-            form.appendChild(input);
-        });
-
-        document.body.appendChild(form);
-        form.submit();
-
-//MOODLE
-
- // Nuevo: Login en Moodle
- const moodleForm = document.createElement('form');
- moodleForm.method = 'POST';
- moodleForm.action = 'http://localhost/moodle/login/index.php';
- moodleForm.style.display = 'none';
- 
- const moodleFields = {
-     username: "phpmyadmin",
-     password: "Josue123!"// Usar el token como password
- };
-
- Object.entries(moodleFields).forEach(([name, value]) => {
-     const input = document.createElement('input');
-     input.type = 'hidden';
-     input.name = name;
-     input.value = value;
-     moodleForm.appendChild(input);
- });
-
- document.body.appendChild(moodleForm);
- 
- // Abrir en nueva pestaña
- const newWindow = window.open('', '_blank');
- moodleForm.target = '_blank';
- moodleForm.submit();
-
-
-   // setRedirecting(true);
-    //setTimeout(() => {
-  //      window.location.href = data.squirrelmail_url;
-   // }, 2000);
-
-
-        // Redirección principal a SquirrelMail
-    //    window.location.href = data.squirrelmail_url;
-
-        // Abrir Moodle en nueva pestaña después de 1 segundo
-     //   setTimeout(() => {
-       //     window.open(data.moodle_url, '_blank');
-       // }, 1000);
-
-    } catch (err) {
-        setError(err.message);
-    } finally {
-        setIsSubmitting(false);
-    }
-};
-    // Nuevo método para registro
     const handleRegister = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -122,10 +47,8 @@ function App() {
             });
             
             const data = await response.json();
-            
             if (!response.ok) throw new Error(data.error || 'Error en registro');
             
-            // Auto-login después de registro
             handleSubmit(e);
             
         } catch (err) {
@@ -134,7 +57,7 @@ function App() {
             setIsSubmitting(false);
         }
     };
-    
+
     return (
         <div className="App">
             <header className="App-header">
@@ -187,13 +110,7 @@ function App() {
                             : (isRegistering ? 'Registrarse' : 'Iniciar Sesión')
                         }
                     </button>
-            {redirecting && (
-                <div className="redirect-message">
-                    Redireccionando a los sistemas... 
-                    <br />
-                    Si no funciona, <a href={data?.squirrelmail_url}>haz clic aquí</a>
-                </div>
-            )}
+
                     {error && <div className="error">{error}</div>}
                 </form>
 

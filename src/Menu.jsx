@@ -2,6 +2,9 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
 
+
+
+// Componentes estilizados CORREGIDOS
 const PortalContainer = styled.div`
   max-width: 1000px;
   margin: 0 auto;
@@ -108,67 +111,97 @@ const LogoutButton = styled.button`
 `;
 
 const Menu = ({ user, onLogout }) => {
-  const tools = [
-    {
-      id: 'moodle',
-      title: 'Moodle UNITEC',
-      description: 'Plataforma de aprendizaje en línea donde encontrarás tus cursos, materiales y actividades académicas.',
-      color: '#f98012',
-      url: 'http://localhost/moodle'
-    },
-    {
-      id: 'squirrelmail',
-      title: 'SquirrelMail',
-      description: 'Accede a tu correo institucional a través de esta plataforma de correo web.',
-      color: '#5d8a2a',
-      url: 'http://localhost/squirrelmail'
-    },
-  ];
+    const tools = [
+        {
+            id: 'moodle',
+            title: 'Moodle UNITEC',
+            description: 'Plataforma de aprendizaje en línea donde encontrarás tus cursos, materiales y actividades académicas.',
+            color: '#f98012'
+        },
+        {
+            id: 'squirrelmail',
+            title: 'SquirrelMail',
+            description: 'Accede a tu correo institucional a través de esta plataforma de correo web.',
+            color: '#5d8a2a'
+        },
+    ];
 
-  const handleToolClick = (url) => {
-    // Abre la herramienta en una nueva pestaña
-    window.open(url, '_blank');
-  };
+    const handleToolClick = (toolId) => {
+        const createForm = (action, fields) => {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = action;
+            form.target = '_blank';
+            
+            Object.entries(fields).forEach(([name, value]) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = value;
+                form.appendChild(input);
+            });
+            
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        };
 
-  return (
-    <PortalContainer>
-      <Header>
-        <WelcomeTitle>¡Hola {user?.name || 'Usuario'}!</WelcomeTitle>
-        <p>Este es tu nuevo Portal de UNITEC.</p>
-        
-        <UserInfo>
-          <p><strong>{user?.name || 'Usuario'}</strong></p>
-          <p>UNITEC</p>
-          <p>{user?.email || 'correo@unitec.edu'}</p>
-          <LogoutButton onClick={onLogout}>
-            Cerrar sesión
-          </LogoutButton>
-        </UserInfo>
-      </Header>
 
-      <SectionTitle>HERRAMIENTAS</SectionTitle>
       
-      <ToolsGrid>
-        {tools.map((tool) => (
-          <ToolCard 
-            key={tool.id}
-            color={tool.color}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => handleToolClick(tool.url)}
-          >
-            <ToolTitle>{tool.title}</ToolTitle>
-            <ToolDescription>{tool.description}</ToolDescription>
-            <ToolLink 
-              color={tool.color}
-            >
-              Acceder
-            </ToolLink>
-          </ToolCard>
-        ))}
-      </ToolsGrid>
-    </PortalContainer>
-  );
+        switch(toolId) {
+            case 'moodle':
+                createForm('http://localhost/moodle/login/index.php', {
+                    username: user.username,
+                    password: user.token
+                });
+                break;
+            
+            case 'squirrelmail':
+                createForm('http://localhost/squirrelmail/src/redirect.php', {
+                    login_username: user.username,
+                    secretkey: user.token,
+                    js_autodetect_results: '1',
+                    just_logged_in: '1',
+                    smsubmit: 'Login'
+                });
+                break;
+        }
+    };
+
+    return (
+        <PortalContainer>
+            <Header>
+                <WelcomeTitle>¡Hola {user?.username || 'Usuario'}!</WelcomeTitle>
+                <UserInfo>
+                    <p><strong>{user?.username}</strong></p>
+                    <p>{user?.email}</p>
+                    <LogoutButton onClick={onLogout}>
+                        Cerrar sesión
+                    </LogoutButton>
+                </UserInfo>
+            </Header>
+
+            <SectionTitle>HERRAMIENTAS</SectionTitle>
+            
+            <ToolsGrid>
+                {tools.map((tool) => (
+                    <ToolCard 
+                        key={tool.id}
+                        color={tool.color}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleToolClick(tool.id)}
+                    >
+                        <ToolTitle>{tool.title}</ToolTitle>
+                        <ToolDescription>{tool.description}</ToolDescription>
+                        <ToolLink color={tool.color}>
+                            Acceder
+                        </ToolLink>
+                    </ToolCard>
+                ))}
+            </ToolsGrid>
+        </PortalContainer>
+    );
 };
 
 export default Menu;

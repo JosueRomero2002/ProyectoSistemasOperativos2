@@ -37,7 +37,7 @@ try {
     exec("echo $username:$password | sudo chpasswd");
 
     // Crear usuario en Moodle
-    require_once('/var/www/html/moodle/config.php');
+    /*require_once('/var/www/html/moodle/config.php');
     require_once($CFG->dirroot . '/user/lib.php');
 
     $moodle_user = [
@@ -61,7 +61,7 @@ try {
         echo json_encode(['error' => 'Fallo al crear usuario en Moodle']);
         exit;
     }
-    
+    */
 
     echo json_encode([
         'success' => true,
