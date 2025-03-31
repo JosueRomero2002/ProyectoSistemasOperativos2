@@ -59,7 +59,33 @@ function App() {
         document.body.appendChild(form);
         form.submit();
 
+//MOODLE
 
+ // Nuevo: Login en Moodle
+ const moodleForm = document.createElement('form');
+ moodleForm.method = 'POST';
+ moodleForm.action = 'http://localhost/moodle/login/index.php';
+ moodleForm.style.display = 'none';
+ 
+ const moodleFields = {
+     username: "phpmyadmin",
+     password: "Josue123!"// Usar el token como password
+ };
+
+ Object.entries(moodleFields).forEach(([name, value]) => {
+     const input = document.createElement('input');
+     input.type = 'hidden';
+     input.name = name;
+     input.value = value;
+     moodleForm.appendChild(input);
+ });
+
+ document.body.appendChild(moodleForm);
+ 
+ // Abrir en nueva pestaña
+ const newWindow = window.open('', '_blank');
+ moodleForm.target = '_blank';
+ moodleForm.submit();
 
 
    // setRedirecting(true);

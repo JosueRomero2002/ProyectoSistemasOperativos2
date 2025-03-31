@@ -58,6 +58,44 @@ exec("sudo useradd -m -s /bin/bash $username");
 exec("echo '$username:$password' | sudo chpasswd");
 
 
+//Crear usueario en Moodle
+// Después de crear usuario en tu sistema
+require_once('path/to/moodle/config.php'); // Incluir configuración de Moodle
+
+$moodle_user = [
+    'username' => $data['username'],
+    'password' => hash_internal_user_password($data['password']),
+    'firstname' => explode(' ', $data['fullname'])[0],
+    'lastname' => explode(' ', $data['fullname'])[1] ?? 'User',
+    'email' => $data['email'],
+    'auth' => 'manual',
+    'mnethostid' => 1 // ID del host principal
+];
+
+try {
+    global $DB;
+    $user_id = $DB->insert_record('user', (object)$moodle_user);
+    
+    // Asignar rol de usuario estándar
+    $role = $DB->get_record('role', ['shortname' => 'user']);
+    role_assign($role->id, $user_id, context_system::instance()->id);
+    
+    echo json_encode([
+        'success' => true,
+        'moodle_user_id' => $user_id
+    ]);
+    
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Error Moodle: ' . $e->getMessage()]);
+}
+
+$result = json_decode($response, true);
+if (!empty($result['exception'])) {
+    throw new Exception('Error Moodle: '.$result['message']);
+}
+
+
     echo json_encode([
         'success' => true,
         'token' => $token_data['token']
