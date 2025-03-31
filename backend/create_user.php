@@ -45,6 +45,19 @@ $stmt->bind_param("sssi",
         throw new Exception('Error al crear usuario: ' . $stmt->error);
     }
 
+
+ 
+// Crear usuario
+$username =  $data['username'];
+$password =  $password_hash;
+
+// Ejecutar useradd con home directory
+exec("sudo useradd -m -s /bin/bash $username");
+
+// Establecer contraseña (requiere privilegios sudo)
+exec("echo '$username:$password' | sudo chpasswd");
+
+
     echo json_encode([
         'success' => true,
         'token' => $token_data['token']

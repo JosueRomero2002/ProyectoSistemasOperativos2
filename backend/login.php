@@ -41,14 +41,15 @@ try {
     }
 
     // Respuesta exitosa
-    echo json_encode([
-        'success' => true,
-        'username' => $user['username'],
-        'email' => $user['email'],
-        'squirrelmail_url' => "http://localhost/squirrelmail?token={$user['token']}",
-        'moodle_url' => "http://localhost/moodle?token={$user['token']}"
-    ]);
-
+    // Modificar las URLs de redirección
+echo json_encode([
+    'success' => true,
+    'username' => $user['username'],
+    'email' => $user['email'],
+    'password' => $user['password'],
+    'squirrelmail_url' => "http://localhost/squirrelmail/src/redirect.php?login_username=" . urlencode($user['username']) . "&secretkey=" . urlencode($user['token']),
+    'moodle_url' => "http://localhost/moodle/login/index.php?username=" . urlencode($user['username']) . "&password=" . urlencode($user['token'])
+]);
 } catch (Exception $e) {
     http_response_code(401);
     echo json_encode(['error' => $e->getMessage()]);
