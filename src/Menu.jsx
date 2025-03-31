@@ -169,6 +169,7 @@ const Menu = ({ user, onLogout }) => {
     };
 
     return (
+      <div style={{backgroundColor: "rgba(0,188,212,0.2)", width: "100vw"}}>
         <PortalContainer>
             <Header>
                 <WelcomeTitle>¡Hola {user?.username || 'Usuario'}!</WelcomeTitle>
@@ -201,6 +202,7 @@ const Menu = ({ user, onLogout }) => {
                 ))}
             </ToolsGrid>
         </PortalContainer>
+        </div>
     );
 };
 

@@ -59,8 +59,13 @@ function App({ onLogin }) {
     };
 
     return (
+        <div style={{width: "100vw", backgroundColor: "red"}}>
+
+      
         <div className="App">
             <header className="App-header">
+
+             
                 <h1>{isRegistering ? 'Registro' : 'Login'} Universitario</h1>
                 
                 {successMessage && (
@@ -154,7 +159,10 @@ function App({ onLogin }) {
                         Acceso a Correo
                     </a>
                 </div>
+               
             </header>
+            
+        </div>
         </div>
     );
 }
