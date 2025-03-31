@@ -168,6 +168,13 @@ const Menu = ({ user, onLogout }) => {
         }
     };
 
+
+
+    const handleLogout = () => {
+      // Limpiar token y redirigir
+      localStorage.removeItem('authToken');
+      onLogout();
+    };
     return (
       <div style={{backgroundColor: "rgba(0,188,212,0.2)", width: "100vw"}}>
         <PortalContainer>
@@ -176,9 +183,9 @@ const Menu = ({ user, onLogout }) => {
                 <UserInfo>
                     <p><strong>{user?.username}</strong></p>
                     <p>{user?.email}</p>
-                    <LogoutButton onClick={onLogout}>
-                        Cerrar sesión
-                    </LogoutButton>
+                    <LogoutButton onClick={handleLogout}>
+      Cerrar sesión
+    </LogoutButton>
                 </UserInfo>
             </Header>
 

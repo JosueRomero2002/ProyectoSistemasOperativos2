@@ -18,7 +18,7 @@ try {
         throw new Exception('Usuario y contraseña requeridos');
     }
 
-    // Obtener usuario
+    
     $stmt = $conn->prepare("
         SELECT u.*, t.token 
         FROM usuarios u
@@ -35,18 +35,17 @@ try {
 
     $user = $result->fetch_assoc();
 
-    // Verificar contraseña
     if (!password_verify($data['password'], $user['password'])) {
         throw new Exception('Credenciales inválidas');
     }
 
-    // Respuesta exitosa
-    // Modificar las URLs de redirección
 echo json_encode([
     'success' => true,
     'username' => $user['username'],
     'email' => $user['email'],
     'password' => $user['password'],
+    'token' => $user['token'],
+    'token_id' => $user['token_id'], // ← Nuevo campo
     'squirrelmail_url' => "http://localhost/squirrelmail/src/redirect.php?login_username=" . urlencode($user['username']) . "&secretkey=" . urlencode($user['token']),
     'moodle_url' => "http://localhost/moodle/login/index.php?username=" . urlencode($user['username']) . "&password=" . urlencode($user['token'])
 ]);
