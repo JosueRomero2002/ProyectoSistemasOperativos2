@@ -42,9 +42,7 @@ if (!password_verify($password_salt, $user['password'])) {
 }
 
 
-  //  if (!password_verify($data['password'], $user['password'])) {
-    //    throw new Exception('Credenciales inválidas');
-    //}
+
 
 echo json_encode([
     'success' => true,
@@ -52,7 +50,7 @@ echo json_encode([
     'email' => $user['email'],
     'password' => $user['password'],
     'token' => $user['token'],
-    'token_id' => $user['token_id'], // ← Nuevo campo
+    'token_id' => $user['token_id'], 
     'squirrelmail_url' => "http://localhost/squirrelmail/src/redirect.php?login_username=" . urlencode($user['username']) . "&secretkey=" . urlencode($user['token']),
     'moodle_url' => "http://localhost/moodle/login/index.php?username=" . urlencode($user['username']) . "&password=" . urlencode($user['token'])
 ]);

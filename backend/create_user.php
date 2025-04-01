@@ -20,9 +20,9 @@ try {
 
     require __DIR__ . '/generar_token.php';
 
-    // Pseudocódigo de lo que FALTA:
+  
 $token_data = generarToken();
-$codigo_original = $token_data['token']; // 6 dígitos originales
+$codigo_original = $token_data['token']; 
 $password_salt = $codigo_original . $data['password'];
 $password_hash = password_hash($password_salt, PASSWORD_DEFAULT);
 

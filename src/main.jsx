@@ -15,7 +15,7 @@ const Root = () => {
       const token = localStorage.getItem('authToken');
       if (token) {
         try {
-          const response = await fetch('http://localhost:8002/validate_token.php', {
+          /*const response = await fetch('http://localhost:8002/validate_token.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token })
@@ -25,7 +25,7 @@ const Root = () => {
           if (data.success) {
             setUserData(data.user);
             setIsLoggedIn(true);
-          }
+          }*/
         } catch (error) {
           console.error('Error validando token:', error);
         }
@@ -37,7 +37,7 @@ const Root = () => {
   }, []);
 
   const handleLogin = (data, password) => {
-    localStorage.setItem('authToken', data.token); // Guardar token
+    localStorage.setItem('authToken', data.token); 
     setUserData({
       username: data.username,
       email: data.email,
@@ -48,7 +48,7 @@ const Root = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken'); // Eliminar token
+    localStorage.removeItem('authToken'); 
     setUserData(null);
     setIsLoggedIn(false);
   };
@@ -68,8 +68,7 @@ const Root = () => {
   );
 };
 
-// Exporta el componente como named export
+
 export const RootComponent = Root;
 
-// Renderiza usando el named export
 createRoot(document.getElementById('root')).render(<RootComponent />);

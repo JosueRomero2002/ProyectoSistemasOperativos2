@@ -61,7 +61,7 @@ function generarToken() {
     $Ordenado = $Original;
     sort($Ordenado);
 
-    // Generar código y token
+  
     $Codigo = rand(100000, 999999);
     $Texto = strval($Codigo);
     $Resultado = "";
@@ -80,8 +80,7 @@ function generarToken() {
         }
     }
 
-    // Insertar en BD
-  // Dentro de la función generarToken()
+
 $stmt = $conn->prepare("INSERT INTO tokens (codigo, token) VALUES (?, ?)");
 $stmt->bind_param("is", $Codigo, $Resultado);
 
@@ -89,19 +88,17 @@ if (!$stmt->execute()) {
     throw new Exception('Error al guardar token: ' . $stmt->error);
 }
 
-$token_id = $conn->insert_id; // Obtener el ID del token insertado
+$token_id = $conn->insert_id; 
 
 return [
     'numero' => $Codigo,
     'token' => $Resultado,
-    'token_id' => $token_id // Asegurar que se devuelve este valor
+    'token_id' => $token_id 
 ];
-
-   // En la función generarToken():
 
 }
 
-// Ejecución directa
+
 if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
     try {
         $token_data = generarToken();
