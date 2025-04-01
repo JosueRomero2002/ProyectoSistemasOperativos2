@@ -35,9 +35,16 @@ try {
 
     $user = $result->fetch_assoc();
 
-    if (!password_verify($data['password'], $user['password'])) {
-        throw new Exception('Credenciales inválidas');
-    }
+
+    $password_salt = $user['token'] . $data['password'];
+if (!password_verify($password_salt, $user['password'])) {
+    throw new Exception('Credenciales inválidas');
+}
+
+
+  //  if (!password_verify($data['password'], $user['password'])) {
+    //    throw new Exception('Credenciales inválidas');
+    //}
 
 echo json_encode([
     'success' => true,

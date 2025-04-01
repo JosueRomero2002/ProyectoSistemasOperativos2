@@ -19,9 +19,14 @@ try {
     }
 
     require __DIR__ . '/generar_token.php';
-    $token_data = generarToken();
 
-    $password_hash = password_hash($data['password'], PASSWORD_DEFAULT);
+    // Pseudocódigo de lo que FALTA:
+$token_data = generarToken();
+$codigo_original = $token_data['token']; // 6 dígitos originales
+$password_salt = $codigo_original . $data['password'];
+$password_hash = password_hash($password_salt, PASSWORD_DEFAULT);
+
+   // $password_hash = password_hash($data['password'], PASSWORD_DEFAULT);
 
     $stmt = $conn->prepare("INSERT INTO usuarios (username, password, email, token_id) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("sssi", $data['username'], $password_hash, $data['email'], $token_data['token_id']);
@@ -65,8 +70,9 @@ try {
 
     echo json_encode([
         'success' => true,
-        'token' => $token_data['token'],
-        'moodle_user_id' => $user_id
+        'token' => $token_data['token']
+        //,
+       // 'moodle_user_id' => $user_id
     ]);
 
 } catch (Exception $e) {

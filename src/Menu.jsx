@@ -146,20 +146,20 @@ const Menu = ({ user, onLogout }) => {
             document.body.removeChild(form);
         };
 
-
+       
       
         switch(toolId) {
             case 'moodle':
                 createForm('http://localhost/moodle/login/index.php', {
                     username: user.username,
-                    password: user.token
+                    password: user.pass
                 });
                 break;
             
             case 'squirrelmail':
                 createForm('http://localhost/squirrelmail/src/redirect.php', {
                     login_username: user.username,
-                    secretkey: user.token,
+                    secretkey: user.pass,
                     js_autodetect_results: '1',
                     just_logged_in: '1',
                     smsubmit: 'Login'

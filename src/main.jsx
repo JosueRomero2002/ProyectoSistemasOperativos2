@@ -36,12 +36,13 @@ const Root = () => {
     checkAuth();
   }, []);
 
-  const handleLogin = (data) => {
+  const handleLogin = (data, password) => {
     localStorage.setItem('authToken', data.token); // Guardar token
     setUserData({
       username: data.username,
       email: data.email,
-      token: data.token
+      token: data.token,
+      pass: password
     });
     setIsLoggedIn(true);
   };

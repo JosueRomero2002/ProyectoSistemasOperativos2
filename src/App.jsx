@@ -25,8 +25,8 @@ function App({ onLogin }) {
           const data = await response.json();
           if (!response.ok) throw new Error(data.error || 'Error de autenticación');
          
-          localStorage.setItem('authToken', data.token); 
-          onLogin(data);
+         
+          onLogin(data,password);
         
       
         } catch (err) {
