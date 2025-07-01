@@ -16,7 +16,7 @@ function App({ onLogin }) {
         setError('');
       
         try {
-          const response = await fetch('http://localhost:8002/login.php', {
+          const response = await fetch('http://22.1.13.237:8002/login.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
@@ -146,14 +146,14 @@ function App({ onLogin }) {
 
                 <div className="system-links">
                     <a 
-                        href="http://localhost/moodle" 
+                        href="http://dejesus.org/moodle" 
                         target="_blank" 
                         rel="noopener noreferrer"
                     >
                         Acceso a Moodle
                     </a>
                     <a 
-                        href="http://localhost/squirrelmail" 
+                        href="http://dejesus.org/squirrelmail" 
                         target="_blank" 
                         rel="noopener noreferrer"
                     >

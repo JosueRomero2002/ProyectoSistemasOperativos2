@@ -150,14 +150,14 @@ const Menu = ({ user, onLogout }) => {
       
         switch(toolId) {
             case 'moodle':
-                createForm('http://localhost/moodle/login/index.php', {
+                createForm('http://dejesus.org/moodle/login/index.php', {
                     username: user.username,
                     password: user.pass
                 });
                 break;
             
             case 'squirrelmail':
-                createForm('http://localhost/squirrelmail/src/redirect.php', {
+                createForm('http://dejesus.org/squirrelmail/src/redirect.php', {
                     login_username: user.username,
                     secretkey: user.pass,
                     js_autodetect_results: '1',

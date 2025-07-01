@@ -4,11 +4,13 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: '0.0.0.0',  // This is important
+    host: true,  // This is important
     port: 3001,
-    strictPort: true,
-    watch: {
-      usePolling: true,
-    }
+    //strictPort: true,
+    //watch: {
+      //usePolling: true,
+   // }
+   origin: 'http://elkyn.org',
+   allowedHosts: ['.org', 'localhost', 'elkyn.org']
   }
 })

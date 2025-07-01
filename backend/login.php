@@ -51,8 +51,8 @@ echo json_encode([
     'password' => $user['password'],
     'token' => $user['token'],
     'token_id' => $user['token_id'], 
-    'squirrelmail_url' => "http://localhost/squirrelmail/src/redirect.php?login_username=" . urlencode($user['username']) . "&secretkey=" . urlencode($user['token']),
-    'moodle_url' => "http://localhost/moodle/login/index.php?username=" . urlencode($user['username']) . "&password=" . urlencode($user['token'])
+    'squirrelmail_url' => "http://22.1.13.237/squirrelmail/src/redirect.php?login_username=" . urlencode($user['username']) . "&secretkey=" . urlencode($user['token']),
+    'moodle_url' => "http://22.1.13.237/moodle/login/index.php?username=" . urlencode($user['username']) . "&password=" . urlencode($user['token'])
 ]);
 } catch (Exception $e) {
     http_response_code(401);
